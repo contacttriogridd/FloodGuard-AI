@@ -37,7 +37,7 @@ trap 'rm -rf "$STAGE"' EXIT
 cp -r Dockerfile requirements-serve.txt configs src api app "$STAGE/"
 mkdir -p "$STAGE/deploy/model_artifacts" && touch "$STAGE/deploy/model_artifacts/.gitkeep"
 cp deploy/hf_space/README.md "$STAGE/README.md"
-find "$STAGE" -name "__pycache__" -type d -prune -exec rm -rf {} +
+find "$STAGE" \( -name "__pycache__" -o -name "*.egg-info" \) -type d -prune -exec rm -rf {} +
 
 "${PYTHON:-python}" - "$STAGE" <<'PY'
 import os
