@@ -128,6 +128,7 @@ API: `POST /predict` (one record → `flood_probability`, `risk_class`, `high_ri
 Filled in after the full Kaggle run (`runs/metrics/benchmark.json`, `report/tables/model_comparison.tex`).
 Numbers from the synthetic smoke run are **not** results and must not be reported.
 
+<!-- RESULTS:START -->
 | Model | OOF R² | Test R² [95 % CI] | RMSE | Macro-F1 | ROC-AUC (High) |
 |---|---|---|---|---|---|
 | Mean predictor | | | | | |
@@ -135,6 +136,7 @@ Numbers from the synthetic smoke run are **not** results and must not be reporte
 | Best single model | | | | | |
 | **FloodGuard ensemble** | | | | | |
 | Kaggle S4E5 private LB — top / median | — | from `configs/benchmarks.yaml` | | | |
+<!-- RESULTS:END -->
 
 ## Honest limitations
 
