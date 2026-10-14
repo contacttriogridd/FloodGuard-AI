@@ -1,0 +1,43 @@
+# Full run inside a Kaggle Notebook (free GPU, data attached as /kaggle/input).
+# Budgets are sized for Kaggle's 12-hour session limit (4 vCPU + 1 GPU).
+#   python scripts/run_pipeline.py --override configs/kaggle.yaml --stages all --skip download
+# Launched from a laptop with:  python scripts/kaggle_training.py launch
+
+project:
+  run_dir: /kaggle/working/runs
+  report_dir: /kaggle/working/report
+
+data:
+  source: kaggle
+  train_path: /kaggle/input/playground-series-s4e5/train.csv
+  test_path: /kaggle/input/playground-series-s4e5/test.csv
+  original_path: /kaggle/input/flood-prediction-dataset/flood.csv   # runner overrides with the actual file name
+
+models:
+  use_gpu: auto
+  defaults:
+    # Bagging models subsample rows per tree so CV on ~1.1 M rows fits the time budget.
+    rf: {n_estimators: 200, max_depth: 16, min_samples_leaf: 5, max_features: 0.5, max_samples: 0.2}
+    et: {n_estimators: 200, max_depth: 18, min_samples_leaf: 5, max_features: 0.6, bootstrap: true, max_samples: 0.2}
+
+optuna:
+  n_trials: 15
+  timeout: 1500                # seconds per model
+  cv_folds: 3
+  subsample: 150000
+  storage: /kaggle/working/runs/optuna/optuna.db
+  grid_search_baseline: {subsample: 30000}
+
+explain:
+  shap_sample: 1500
+  background: 60
+  local_max_evals: 300
+  permutation_sample: 3000
+  permutation_repeats: 3
+
+tracking:
+  mlflow_uri: sqlite:////kaggle/working/runs/mlflow.db
+  jsonl_path: /kaggle/working/runs/tracking/runs.jsonl
+
+app:
+  artifacts_dir: /kaggle/working/runs/models

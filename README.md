@@ -88,6 +88,18 @@ Kaggle → *Settings → API → Create New Token* downloads `kaggle.json`. Put 
 `make` shortcuts: `make smoke`, `make data`, `make pipeline`, `make test`, `make api`, `make mlflow`, `make docker-build`,
 `make docker-run`, `make hf-deploy`, `make report`.
 
+### Kaggle cloud GPU (launched from your laptop — no local compute)
+`configs/kaggle.yaml` sizes the run for Kaggle's 12-hour session; `deploy/kaggle_kernel/run_floodguard.py` runs inside
+a private Kaggle notebook with the competition and original datasets attached.
+
+```bash
+python scripts/kaggle_training.py setup    # installs ~/Downloads/kaggle.json
+python scripts/kaggle_training.py launch   # needs accepted competition rules + phone-verified Kaggle account (internet)
+python scripts/kaggle_training.py status   # until "complete"
+python scripts/kaggle_training.py fetch    # -> runs/ (models, metrics, figures) + report/ (tables, figures)
+python scripts/kaggle_training.py submit   # late submission -> the ensemble's own private-leaderboard R²
+```
+
 ### Colab
 Open `notebooks/FloodGuard_Colab.ipynb`, select a **GPU** runtime, set `REPO_URL`, upload `kaggle.json` and run all
 cells. XGBoost, CatBoost and the MLP use the GPU automatically (`models.use_gpu: auto`). For a shorter run add
