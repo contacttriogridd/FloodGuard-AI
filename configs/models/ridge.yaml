@@ -1,0 +1,4 @@
+# Ridge search space (Optuna) + grid for the GridSearchCV baseline.
+alpha: {type: float, low: 1.0e-4, high: 100.0, log: true}
+grid:
+  alpha: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]

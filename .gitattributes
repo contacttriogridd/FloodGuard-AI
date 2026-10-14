@@ -1,0 +1,5 @@
+# Keep LF endings everywhere: scripts and configs run on Linux (Colab, Docker, Hugging Face Spaces).
+* text=auto eol=lf
+*.sh text eol=lf
+*.png binary
+*.joblib binary

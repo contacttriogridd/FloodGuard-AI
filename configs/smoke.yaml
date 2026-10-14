@@ -1,0 +1,75 @@
+# Tiny CPU override for smoke tests / CI — synthetic data, 2 folds, 2 Optuna trials.
+#   python scripts/make_synthetic_flood.py
+#   python scripts/run_pipeline.py --override configs/smoke.yaml --stages all --skip download
+# Results of this run come from SYNTHETIC data and must not be reported as real results.
+
+project:
+  run_dir: runs/smoke
+  report_dir: runs/smoke/report      # keeps synthetic numbers out of report/
+
+data:
+  source: synthetic
+  train_path: data/synthetic/s4e5/train.csv
+  test_path: data/synthetic/s4e5/test.csv
+  original_path: data/synthetic/original/flood.csv
+  missing: {study_rows: 2000, cv_folds: 2, max_fit_rows: 2000}
+  outliers: {iforest_max_rows: 5000}
+
+features:
+  target_encoding_cv: 3
+  selection: {sample_rows: 2500, candidate_k: [20, 40, all], cv_folds: 2, permutation_repeats: 2}
+
+reduction:
+  tsne: {sample: 600, perplexity: 25}
+  umap: {sample: 600, n_neighbors: 15}
+  autoencoder: {epochs: 8, batch_size: 512, max_rows: 5000}
+
+cv:
+  n_folds: 2
+  early_stopping_rounds: 30
+
+models:
+  use_gpu: false
+  defaults:
+    rf: {n_estimators: 60, max_depth: 10}
+    et: {n_estimators: 60, max_depth: 10}
+    histgb: {max_iter: 200}
+    xgb: {n_estimators: 300, learning_rate: 0.08}
+    lgbm: {n_estimators: 300, learning_rate: 0.08, num_leaves: 31}
+    catboost: {iterations: 300, learning_rate: 0.1}
+    mlp: {hidden: [64, 32], epochs: 12, batch_size: 512, patience: 4}
+    ae_lgbm: {n_estimators: 300, learning_rate: 0.08, num_leaves: 31}
+
+optuna:
+  n_trials: 2
+  timeout: 120
+  cv_folds: 2
+  subsample: 2500
+  n_startup_trials: 1
+  storage: runs/smoke/optuna/optuna.db
+  grid_search_baseline: {subsample: 1500}
+
+stacking:
+  hill_climbing_iters: 30
+  meta_cv_folds: 3
+
+evaluation:
+  bootstrap: 300
+  friedman_blocks: 6
+
+explain:
+  shap_sample: 300
+  interaction_sample: 80
+  background: 30
+  local_max_evals: 100
+  ice_sample: 80
+  permutation_repeats: 2
+  permutation_sample: 400
+  lime_num_features: 8
+
+tracking:
+  mlflow_uri: sqlite:///runs/smoke/mlflow.db
+  jsonl_path: runs/smoke/tracking/runs.jsonl
+
+app:
+  artifacts_dir: runs/smoke/models

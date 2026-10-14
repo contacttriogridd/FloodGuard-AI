@@ -1,0 +1,14 @@
+.git
+.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+data/
+runs/
+mlruns/
+notebooks/
+report/
+tests/
+*.ipynb
+*.zip
+.env

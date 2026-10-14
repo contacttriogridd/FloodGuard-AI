@@ -1,0 +1,195 @@
+# FloodGuard AI — default configuration (full Kaggle S4E5 run, Colab / Kaggle GPU).
+# Every path is relative to the repository root. Override with
+#   --override configs/smoke.yaml        (merge another YAML)
+#   --override optuna.n_trials=10         (dotted key=value)
+
+project:
+  name: FloodGuard AI
+  version: 1.0.0
+  seed: 42
+  run_dir: runs
+  report_dir: report
+  log_level: INFO
+
+data:
+  source: kaggle                       # kaggle | synthetic (set by smoke.yaml)
+  competition: playground-series-s4e5
+  original_dataset: naiyakhalid/flood-prediction-dataset
+  raw_dir: data/raw
+  train_path: data/raw/s4e5/train.csv
+  test_path: data/raw/s4e5/test.csv     # unlabeled competition test (used for frequency encoding + submission)
+  original_path: data/raw/original/flood.csv
+  id_col: id
+  target: FloodProbability
+  merge_original: true                  # add the original dataset as extra training rows (is_original = 1)
+  external_validation: true             # also train an S4E5-only model and test it on the original data
+  sample_rows: null                     # optional subsample of S4E5 train (e.g. 300000 on a small GPU box)
+  holdout_size: 0.15
+  factor_range: [0, 25]
+  missing:
+    inject_rate: 0.05
+    study_rows: 30000
+    imputers: [median, knn, iterative]
+    cv_folds: 3
+    max_fit_rows: 30000
+  outliers:
+    iqr_k: 1.5
+    iforest_contamination: 0.01
+    iforest_max_rows: 200000
+
+features:
+  factors:
+    - MonsoonIntensity
+    - TopographyDrainage
+    - RiverManagement
+    - Deforestation
+    - Urbanization
+    - ClimateChange
+    - DamsQuality
+    - Siltation
+    - AgriculturalPractices
+    - Encroachments
+    - IneffectiveDisasterPreparedness
+    - DrainageSystems
+    - CoastalVulnerability
+    - Landslides
+    - Watersheds
+    - DeterioratingInfrastructure
+    - PopulationScore
+    - WetlandLoss
+    - InadequatePlanning
+    - PoliticalFactors
+  themes:
+    hydro_climatic: [MonsoonIntensity, ClimateChange, TopographyDrainage, Watersheds, CoastalVulnerability, Siltation]
+    urban_infrastructure: [Urbanization, DrainageSystems, DeterioratingInfrastructure, Encroachments, PopulationScore, DamsQuality]
+    environmental: [Deforestation, WetlandLoss, AgriculturalPractices, Landslides]
+    governance: [RiverManagement, IneffectiveDisasterPreparedness, InadequatePlanning, PoliticalFactors]
+  interactions:
+    - [Urbanization, DrainageSystems]
+    - [MonsoonIntensity, TopographyDrainage]
+    - [ClimateChange, CoastalVulnerability]
+    - [Deforestation, Landslides]
+  row_stats: true
+  count_thresholds: [5, 6, 7, 8, 9, 10]
+  theme_aggregates: true
+  frequency_encoding: true
+  frequency_use_unlabeled_test: true    # count values over train fold + unlabeled competition test (no labels used)
+  sorted_values: true
+  target_encoding: true
+  target_encoding_features: [MonsoonIntensity, Urbanization, DrainageSystems, ClimateChange, Deforestation, Landslides]
+  target_encoding_cv: 5
+  # High-cardinality categoricals: each factor pair becomes one key with up to ~(range+1)^2 levels,
+  # encoded by frequency + cross-fitted target encoding.
+  combination_encoding: true
+  combination_pairs:
+    - [Urbanization, DrainageSystems]
+    - [MonsoonIntensity, TopographyDrainage]
+    - [ClimateChange, CoastalVulnerability]
+    - [Deforestation, Landslides]
+    - [Encroachments, InadequatePlanning]
+    - [RiverManagement, Siltation]
+  selection:
+    enabled: true
+    sample_rows: 60000
+    candidate_k: [25, 40, 60, all]
+    cv_folds: 3
+    permutation_repeats: 3
+
+reduction:
+  pca: true
+  tsne: {enabled: true, sample: 4000, perplexity: 35}
+  umap: {enabled: true, sample: 4000, n_neighbors: 30, min_dist: 0.2}
+  autoencoder:
+    enabled: true
+    hidden: [32, 16]
+    bottleneck: 4
+    epochs: 40
+    batch_size: 2048
+    lr: 0.002
+    patience: 6
+    max_rows: 400000
+
+cv:
+  n_folds: 5
+  stratify_bins: 10
+  early_stopping_rounds: 100
+
+models:
+  use_gpu: auto                         # auto | true | false  (XGBoost / CatBoost / MLP)
+  lgbm_device: cpu                      # cpu | gpu (OpenCL) | cuda — LightGBM on GPU needs a GPU-enabled build;
+                                        # used only when a GPU is present, falls back to CPU if training fails
+  enabled: [ridge, elasticnet, rf, et, histgb, xgb, lgbm, catboost, mlp, ae_lgbm]
+  tune: [ridge, rf, et, xgb, lgbm, catboost, mlp]
+  defaults:
+    ridge: {alpha: 1.0}
+    elasticnet: {alpha: 0.0005, l1_ratio: 0.5, max_iter: 5000}
+    rf: {n_estimators: 300, max_depth: 16, min_samples_leaf: 5, max_features: 0.5}
+    et: {n_estimators: 300, max_depth: 18, min_samples_leaf: 5, max_features: 0.6}
+    histgb: {max_iter: 1500, learning_rate: 0.05, max_leaf_nodes: 63, l2_regularization: 1.0}
+    xgb: {n_estimators: 3000, learning_rate: 0.03, max_depth: 6, subsample: 0.8, colsample_bytree: 0.6}
+    lgbm: {n_estimators: 3000, learning_rate: 0.03, num_leaves: 63, feature_fraction: 0.6, bagging_fraction: 0.8, bagging_freq: 1}
+    catboost: {iterations: 3000, learning_rate: 0.05, depth: 6, l2_leaf_reg: 3.0}
+    mlp: {hidden: [256, 128, 64], dropout: 0.1, lr: 0.002, weight_decay: 0.00001, epochs: 60, batch_size: 2048, patience: 8}
+    ae_lgbm: {n_estimators: 3000, learning_rate: 0.03, num_leaves: 63, feature_fraction: 0.6, bagging_fraction: 0.8, bagging_freq: 1}
+
+optuna:
+  n_trials: 40
+  timeout: 3600                         # seconds per model
+  cv_folds: 3
+  subsample: 200000                     # rows of the training split used for tuning
+  sampler: tpe
+  multivariate: true
+  pruner: median
+  n_startup_trials: 5
+  storage: runs/optuna/optuna.db        # SQLite file (relative to repo root)
+  grid_search_baseline:
+    enabled: true
+    models: [ridge, rf]
+    subsample: 50000
+
+stacking:
+  hill_climbing_iters: 100
+  meta_features: [row_sum, row_std]
+  meta_cv_folds: 5
+  selection_metric: r2
+
+risk:
+  class_names: [Low, Medium, High]
+  class_quantiles: [0.333, 0.667]       # ground-truth classes = tertiles of the training target
+
+evaluation:
+  bootstrap: 1000
+  ci: 0.95
+  friedman_blocks: 10
+  ablation_model: lgbm
+  ablations: [no_row_features, no_target_encoding, no_combination_encoding, without_original]
+  calibration_bins: 10
+  error_analysis:
+    top_k: 20
+    boundary_width: 0.01
+
+explain:
+  shap_sample: 2000
+  interaction_sample: 300
+  background: 100
+  local_max_evals: 500
+  pdp_features: 4
+  ice_sample: 300
+  permutation_repeats: 5
+  permutation_sample: 5000
+  lime_num_features: 10
+
+tracking:
+  backend: mlflow                       # mlflow | jsonl
+  mlflow_uri: sqlite:///runs/mlflow.db
+  experiment: FloodGuard-AI
+  jsonl_path: runs/tracking/runs.jsonl
+
+app:
+  artifacts_dir: runs/models
+  max_batch: 1000
+  max_csv_rows: 1000
+  max_csv_bytes: 2000000
+  model_repo_env: FG_MODEL_REPO
+  host: 0.0.0.0
+  port: 7860

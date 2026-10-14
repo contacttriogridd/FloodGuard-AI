@@ -1,0 +1,19 @@
+# Minimal inference environment for the Docker image / Hugging Face Space.
+# No PyTorch, Optuna or MLflow: the MLP and autoencoder run as NumPy forward passes.
+scikit-learn==1.9.1
+xgboost==3.2.0
+lightgbm==4.7.0
+catboost==1.2.10
+numpy>=2.0,<2.6
+pandas>=2.2
+scipy>=1.12
+joblib>=1.4
+PyYAML>=6.0
+shap>=0.46
+matplotlib>=3.8
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+python-multipart>=0.0.9
+gradio>=5.0
+huggingface_hub>=0.24

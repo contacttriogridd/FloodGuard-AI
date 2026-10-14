@@ -1,0 +1,14 @@
+services:
+  floodguard:
+    build: .
+    image: floodguard-ai:latest
+    ports:
+      - "7860:7860"
+    environment:
+      # Optional: pull artefacts from a Hugging Face model repo instead of the mounted folder.
+      FG_MODEL_REPO: ${FG_MODEL_REPO:-}
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      # Serve the model trained locally / on Colab (copy runs/models here or change the path).
+      - ./runs/models:/app/model:ro
+    restart: unless-stopped

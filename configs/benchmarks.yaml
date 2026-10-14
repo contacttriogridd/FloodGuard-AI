@@ -1,0 +1,44 @@
+# External benchmarks. NEVER guess these numbers.
+#
+# Kaggle leaderboard: fill in from
+#   https://www.kaggle.com/competitions/playground-series-s4e5/leaderboard  (Private tab)
+# or run `python -m floodguard.evaluation.benchmark --fetch-leaderboard` (needs Kaggle credentials;
+# check on the website whether the API returned the public or the private leaderboard).
+# The official top / median private R² could NOT be confirmed from a public source (checked 2026-10-14),
+# so they stay null. Your own private score: submit runs/submission.csv as a late submission.
+kaggle_leaderboard:
+  competition: playground-series-s4e5
+  metric: R2
+  source_url: https://www.kaggle.com/competitions/playground-series-s4e5/leaderboard
+  private_top_r2: null
+  private_median_r2: null
+  fetched_on: null
+  note: "Fill in manually from the Private leaderboard tab; leave null if unknown."
+  # Secondary context only (NOT official, do not cite as the leaderboard top): the community repo
+  # https://github.com/nhamhung/flood-prediction reports 2,794 teams and that private R2 >= 0.86899
+  # corresponds to roughly the top 56 teams.
+
+# Published flood-susceptibility ensemble studies — DIFFERENT DATASETS, indicative only.
+# Values copied from each paper's abstract; `source` says where the abstract was read.
+literature:
+  - bibkey: ren2024
+    study: "Ren et al. (2024)"
+    citation: "H. Ren et al., \"Flood susceptibility assessment with random sampling strategy in ensemble learning (RF and XGBoost),\" Remote Sensing, vol. 16, no. 2, Art. no. 320, 2024, doi: 10.3390/rs16020320."
+    dataset: "Kunming (mountainous urban area), GIS flood inventory"
+    model: "Random Forest (XGBoost: 0.84, ANN: 0.83, SVM: 0.82)"
+    metric: AUC
+    value: 0.87
+    source: "Abstract via Semantic Scholar API (DOI 10.3390/rs16020320)"
+    verified: true
+  - bibkey: rahimi2026
+    study: "Rahimi et al. (2026)"
+    citation: "M. Rahimi et al., \"Integrating geospatial intelligence and machine learning for flood susceptibility mapping,\" Scientific Reports, vol. 16, Art. no. 10228, 2026, doi: 10.1038/s41598-026-41014-3."
+    dataset: "Global Flood Database flood extents (2000–2018)"
+    model: "Voting ensemble of RF, XGB, LightGBM, DT, GLM (XGB: 0.985, RF: 0.984, LightGBM: 0.982)"
+    metric: AUC
+    value: 0.994
+    source: "Abstract via Europe PMC (DOI 10.1038/s41598-026-41014-3)"
+    verified: true
+# Cited in the literature review but NOT used as numeric benchmarks (no metric in the abstract):
+#   Khosravi et al. 2018, Sci. Total Environ. 627:744-755 — ADT best of LMT/REPT/NBT/ADT (AUC values only in full text)
+#   Tehrany et al. 2014, J. Hydrol. 512:332-343

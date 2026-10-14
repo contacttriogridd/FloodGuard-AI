@@ -1,0 +1,9 @@
+# Random Forest search space (Optuna). Grid-search baseline grid is in `grid`.
+n_estimators: {type: int, low: 100, high: 500, step: 50}
+max_depth: {type: int, low: 6, high: 24}
+min_samples_leaf: {type: int, low: 1, high: 20}
+max_features: {type: float, low: 0.2, high: 1.0}
+grid:
+  n_estimators: [100, 300]
+  max_depth: [10, 18]
+  min_samples_leaf: [2, 10]

@@ -1,0 +1,3 @@
+# ElasticNet search space (Optuna).
+alpha: {type: float, low: 1.0e-5, high: 1.0, log: true}
+l1_ratio: {type: float, low: 0.05, high: 0.95}

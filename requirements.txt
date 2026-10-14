@@ -1,0 +1,39 @@
+# FloodGuard AI — full training + serving environment (Python 3.10–3.12).
+# Libraries that affect pickled models are pinned exactly so a model trained on
+# Colab loads in the serving container (see requirements-serve.txt).
+#   CPU-only PyTorch:  pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+
+# core / modelling (pinned: part of the saved pipeline)
+scikit-learn==1.9.1
+xgboost==3.2.0
+lightgbm==4.7.0
+catboost==1.2.10
+numpy>=2.0,<2.6
+pandas>=2.2
+scipy>=1.12
+joblib>=1.4
+PyYAML>=6.0
+pyarrow>=15
+
+# deep learning, tuning, tracking, explainability, reduction
+torch>=2.2
+optuna>=4.0
+mlflow>=3.0
+shap>=0.46
+lime>=0.2.0.1
+umap-learn>=0.5.6
+matplotlib>=3.8
+
+# data access, serving, deployment
+kaggle>=1.6
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+python-multipart>=0.0.9
+gradio>=5.0
+huggingface_hub>=0.24
+
+# tests
+pytest>=8
+httpx>=0.27
+nbformat>=5.10

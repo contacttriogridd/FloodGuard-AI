@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FloodGuard AI — Urban Flood Risk</title>
+<meta name="description" content="FloodGuard AI: ensemble machine learning for urban flood risk prediction with explainable results.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2.5 4.5 7v8.2c0 7.1 4.9 12.6 11.5 14.3 6.6-1.7 11.5-7.2 11.5-14.3V7z' fill='%231D6CE0'/%3E%3Cpath d='M8 19c1.3 0 1.9-1 3.2-1s1.9 1 3.2 1 1.9-1 3.2-1 1.9 1 3.2 1 1.9-1 3-1' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #0b1b33; --ink-2: #334155; --muted: #5b6b82; --line: #e3e8ef; --bg: #f5f8fc; --card: #fff;
+    --brand: #1d6ce0; --brand-d: #1757c2; --brand-50: #eef6ff;
+    --low: #15803d; --low-bg: #dcfce7; --med: #b45309; --med-bg: #fef3c7; --high: #b91c1c; --high-bg: #fee2e2;
+    --raise: #e34948; --lower: #2a78d6; --radius: 16px;
+    --shadow: 0 1px 2px rgba(11,27,51,.04), 0 6px 24px -8px rgba(11,27,51,.10);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow-x: hidden; }
+  a { color: var(--brand); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  header { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; gap: 16px; height: 62px; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 750; font-size: 17px; color: var(--ink); text-decoration: none; }
+  .logo span { color: var(--brand); }
+  nav { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  nav a { color: var(--ink-2); text-decoration: none; padding: 8px 12px; border-radius: 10px; font-weight: 550; font-size: 14px; }
+  nav a:hover { background: #eef2f7; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 650; background: #fff; border: 1px solid var(--line); white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; }
+  .hero { padding: 34px 0 10px; }
+  h1 { margin: 0; font-size: clamp(26px, 4vw, 38px); letter-spacing: -.02em; line-height: 1.15; }
+  .lead { color: var(--muted); max-width: 720px; margin: 8px 0 0; font-size: 16.5px; }
+  .banner { margin: 18px 0 0; padding: 12px 14px; border-radius: 12px; background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; font-size: 14px; display: none; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 22px; padding: 22px 0 40px; align-items: start; }
+  @media (max-width: 960px) { .grid { grid-template-columns: 1fr; } nav { display: none; } }
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid rgba(11,27,51,.06); padding: 22px; }
+  .card + .card { margin-top: 18px; }
+  .card h2 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+  .card .sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 6px; }
+  button, .btn { font: inherit; font-weight: 650; border-radius: 12px; border: 0; cursor: pointer; min-height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .btn-primary { background: var(--brand); color: #fff; width: 100%; min-height: 52px; font-size: 16px; margin-top: 18px; }
+  .btn-primary:hover { background: var(--brand-d); }
+  .btn-primary:disabled { opacity: .6; cursor: progress; }
+  .btn-soft { background: var(--brand-50); color: var(--brand-d); min-height: 40px; font-size: 14px; }
+  .btn-ghost { background: transparent; color: var(--ink-2); min-height: 40px; font-size: 14px; border: 1px solid var(--line); }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  fieldset { border: 0; border-top: 1px solid var(--line); margin: 16px 0 0; padding: 14px 0 0; }
+  legend { font-size: 12.5px; font-weight: 750; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 0 8px 0 0; }
+  .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 22px; margin-top: 8px; }
+  @media (max-width: 560px) { .sliders { grid-template-columns: 1fr; } }
+  .slider label { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; color: var(--ink); gap: 8px; }
+  .slider output { font-variant-numeric: tabular-nums; color: var(--brand-d); font-weight: 750; min-width: 2ch; text-align: right; }
+  input[type=range] { width: 100%; accent-color: var(--brand); height: 28px; margin: 2px 0 0; }
+  .empty { text-align: center; padding: 46px 20px; color: var(--muted); border: 2px dashed var(--line); border-radius: var(--radius); background: rgba(255,255,255,.6); }
+  .empty svg { color: var(--brand); }
+  .label { font-size: 12px; font-weight: 800; letter-spacing: .14em; color: var(--muted); }
+  .result-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 12px; }
+  .badge { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 14px; font-size: 28px; font-weight: 800; letter-spacing: -.01em; }
+  .badge.low { background: var(--low-bg); color: var(--low); } .badge.medium { background: var(--med-bg); color: var(--med); } .badge.high { background: var(--high-bg); color: var(--high); }
+  .big { font-size: 44px; font-weight: 650; letter-spacing: -.02em; line-height: 1; text-align: right; }
+  .big small { display: block; font-size: 13px; color: var(--muted); font-weight: 550; letter-spacing: 0; margin-top: 6px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .stat { background: #f6f8fb; border-radius: 12px; padding: 10px 14px; }
+  .stat b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .meter { position: relative; margin-top: 26px; height: 14px; display: flex; gap: 3px; }
+  .meter i { display: block; height: 100%; }
+  .meter i:first-child { border-radius: 999px 0 0 999px; } .meter i:last-child { border-radius: 0 999px 999px 0; }
+  .meter .ci { position: absolute; top: -4px; height: 22px; border: 2px solid var(--ink); border-radius: 6px; background: rgba(11,27,51,.06); }
+  .meter .ptr { position: absolute; top: -8px; width: 4px; height: 30px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); transition: left .5s ease; }
+  .zones { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--muted); margin-top: 8px; }
+  .driver { margin-top: 14px; }
+  .driver .row { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .driver .name { font-weight: 650; }
+  .driver .val { color: var(--muted); font-size: 13px; }
+  .driver .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .track { height: 8px; background: #eef2f7; border-radius: 999px; margin-top: 6px; overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: 999px; transition: width .6s ease; }
+  .legend { display: flex; gap: 16px; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 6px; border-radius: 4px; margin-right: 6px; vertical-align: middle; background: currentColor; }
+  ul.actions { margin: 10px 0 0; padding: 0; list-style: none; }
+  ul.actions li { padding: 10px 0 10px 28px; border-top: 1px solid var(--line); position: relative; }
+  ul.actions li:first-child { border-top: 0; }
+  ul.actions li::before { content: "✓"; position: absolute; left: 4px; color: var(--brand); font-weight: 800; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .error { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: #fef2f2; color: #991b1b; font-size: 14px; display: none; }
+  .file { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+  footer { border-top: 1px solid var(--line); background: #fff; padding: 22px 0; color: var(--muted); font-size: 13px; }
+  .tech { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tech span { background: #eef2f7; color: var(--ink-2); border-radius: 8px; padding: 3px 9px; font-weight: 650; font-size: 12px; }
+  .spin { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: s .8s linear infinite; }
+  @keyframes s { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="FloodGuard AI home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2.5 4.5 7v8.2c0 7.1 4.9 12.6 11.5 14.3 6.6-1.7 11.5-7.2 11.5-14.3V7z" fill="#1D6CE0"/><path d="M8 19c1.3 0 1.9-1 3.2-1s1.9 1 3.2 1 1.9-1 3.2-1 1.9 1 3.2 1 1.9-1 3-1" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M16 8.2c1.9 2.4 2.9 4.1 2.9 5.4a2.9 2.9 0 1 1-5.8 0c0-1.3 1-3 2.9-5.4z" fill="#fff"/></svg>
+      FloodGuard <span>AI</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#predict">Predict</a><a href="#batch">Batch CSV</a><a href="/ui">Gradio UI</a><a href="/docs">API docs</a>
+    </nav>
+    <span class="pill" id="status" role="status" aria-live="polite"><span class="dot" id="status-dot"></span><span id="status-text">Checking API…</span></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Predict urban flood risk before it becomes a threat.</h1>
+    <p class="lead">An ensemble of gradient-boosted trees, bagging models and a neural network estimates the flood probability from 20 environmental, infrastructure and governance factors — and explains which factors drive it.</p>
+    <div class="banner" id="synthetic-banner" role="note">This demo model was trained on <b>synthetic smoke-test data</b>. Predictions illustrate the system only — they are not real flood estimates.</div>
+  </section>
+
+  <div class="grid" id="predict">
+    <section class="card" aria-labelledby="factors-title">
+      <h2 id="factors-title">Flood risk factors</h2>
+      <p class="sub">Integer scores for each factor (higher = worse for flooding). Ranges come from the training data.</p>
+      <div class="toolbar">
+        <button class="btn-soft" type="button" id="demo">✦ Try demo</button>
+        <button class="btn-ghost" type="button" id="random">Randomise</button>
+        <button class="btn-ghost" type="button" id="reset">Reset</button>
+      </div>
+      <form id="form" novalidate>
+        <div id="groups"><p class="muted">Loading factor ranges…</p></div>
+        <button class="btn btn-primary" type="submit" id="submit">Predict flood risk</button>
+        <div class="error" id="form-error" role="alert"></div>
+      </form>
+    </section>
+
+    <div aria-live="polite">
+      <section class="card" id="result-card">
+        <div class="empty" id="empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></svg>
+          <p style="font-weight:650;color:var(--ink);margin:12px 0 4px">Your flood risk result will appear here</p>
+          <p class="muted" style="margin:0">Adjust the factors or press <b>Try demo</b>, then <b>Predict flood risk</b>.</p>
+        </div>
+        <div id="result" hidden>
+          <div class="label">FLOOD RISK</div>
+          <div class="result-top">
+            <div class="badge" id="badge"></div>
+            <div class="big"><span id="prob"></span><small>Predicted flood probability</small></div>
+          </div>
+          <div class="meter" aria-hidden="true" id="meter"></div>
+          <div class="zones"><span>LOW</span><span>MEDIUM</span><span>HIGH</span></div>
+          <div class="stats">
+            <div class="stat"><span>Ensemble spread (95%)</span><b id="ci"></b></div>
+            <div class="stat"><span>P(High risk)</span><b id="phigh"></b></div>
+          </div>
+          <p class="muted" id="summary" style="margin:14px 0 0"></p>
+        </div>
+      </section>
+
+      <section class="card" id="drivers-card" hidden>
+        <h2>Why this prediction?</h2>
+        <p class="sub">The five factors with the largest SHAP contribution to this prediction.</p>
+        <div class="legend"><span style="color:var(--raise)">Raises risk</span><span style="color:var(--lower)">Lowers risk</span></div>
+        <div id="drivers"></div>
+        <p class="muted" id="base" style="margin-top:14px"></p>
+      </section>
+
+      <section class="card" id="actions-card" hidden>
+        <h2>Recommended actions</h2>
+        <p class="sub">Mitigation measures mapped from the factors that raise the risk.</p>
+        <ul class="actions" id="actions"></ul>
+        <p class="muted">FloodGuard AI supports planning decisions — always follow official warnings from local authorities.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" id="batch" style="margin-bottom:40px" aria-labelledby="batch-title">
+    <h2 id="batch-title">Batch prediction (CSV)</h2>
+    <p class="sub">Upload a CSV with the 20 factor columns (extra columns such as <code>id</code> are kept). Limits: <span id="limits">…</span>.</p>
+    <div class="file">
+      <input type="file" id="csv" accept=".csv,text/csv" aria-label="CSV file">
+      <button class="btn-soft" type="button" id="upload">Upload &amp; predict</button>
+      <a class="btn-ghost btn" href="#" id="template">Download template</a>
+    </div>
+    <div class="error" id="batch-error" role="alert"></div>
+    <div id="batch-result"></div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b style="color:var(--ink)">FloodGuard AI</b> — An Ensemble Learning Framework for Urban Flood Risk Prediction. <span id="model-meta"></span></div>
+    <div class="tech"><span>FastAPI</span><span>Docker</span><span>XGBoost</span><span>LightGBM</span><span>CatBoost</span><span>PyTorch</span><span>Scikit-learn</span><span>SHAP</span><span>Optuna</span><span>MLflow</span></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const THEME_TITLES = { hydro_climatic: "Hydro-climatic", urban_infrastructure: "Urban & infrastructure", environmental: "Environmental", governance: "Governance" };
+  const ICON = { Low: "✓", Medium: "!", High: "▲" };
+  let info = null;
+
+  const el = (tag, props = {}, children = []) => {
+    const n = document.createElement(tag);
+    Object.entries(props).forEach(([k, v]) => (k === "text" ? (n.textContent = v) : k === "style" ? (n.style.cssText = v) : n.setAttribute(k, v)));
+    children.forEach((c) => n.append(c));
+    return n;
+  };
+
+  async function api(path, options = {}) {
+    const res = await fetch(path, options);
+    if (!res.ok) {
+      let msg = `Request failed (${res.status}).`;
+      try {
+        const body = await res.json();
+        if (Array.isArray(body.errors)) msg = body.errors.map((e) => `${e.field}: ${e.message}`).join(" · ");
+        else if (typeof body.detail === "string") msg = body.detail;
+        else if (body.detail && body.detail.message) msg = body.detail.message + ": " + body.detail.problems.map((p) => `${p.column} (rows ${p.rows.join(", ")})`).join("; ");
+      } catch (_) {}
+      throw new Error(msg);
+    }
+    return res;
+  }
+
+  function setStatus(state, text) {
+    $("status-dot").style.background = { ok: "#22c55e", warn: "#f59e0b", down: "#ef4444" }[state];
+    $("status-text").textContent = text;
+  }
+
+  function buildSliders() {
+    const groups = $("groups");
+    groups.textContent = "";
+    const themes = info.themes || { all: info.factors };
+    Object.entries(themes).forEach(([theme, cols]) => {
+      const fs = el("fieldset", {}, [el("legend", { text: THEME_TITLES[theme] || theme })]);
+      const grid = el("div", { class: "sliders" });
+      cols.forEach((f) => {
+        const [lo, hi] = info.bounds[f];
+        const id = `f-${f}`;
+        const out = el("output", { for: id, id: `${id}-v`, text: "5" });
+        const input = el("input", { type: "range", id, name: f, min: lo, max: hi, step: 1, value: Math.min(Math.max(5, lo), hi) });
+        input.addEventListener("input", () => (out.textContent = input.value));
+        grid.append(el("div", { class: "slider" }, [el("label", { for: id }, [el("span", { text: f.replace(/([a-z])([A-Z])/g, "$1 $2") }), out]), input]));
+      });
+      fs.append(grid);
+      groups.append(fs);
+    });
+  }
+
+  function setValues(fn) {
+    info.factors.forEach((f) => {
+      const input = $(`f-${f}`);
+      const [lo, hi] = info.bounds[f];
+      input.value = Math.min(Math.max(Math.round(fn(f, lo, hi)), lo), hi);
+      $(`f-${f}-v`).textContent = input.value;
+    });
+  }
+
+  function record() {
+    return Object.fromEntries(info.factors.map((f) => [f, parseInt($(`f-${f}`).value, 10)]));
+  }
+
+  function render(r) {
+    const cls = r.risk_class.toLowerCase();
+    const badge = $("badge");
+    badge.className = `badge ${cls}`;
+    badge.textContent = `${ICON[r.risk_class] || ""} ${r.risk_class.toUpperCase()}`;
+    $("prob").textContent = r.flood_probability.toFixed(3);
+    $("ci").textContent = `${r.confidence_interval[0].toFixed(3)} – ${r.confidence_interval[1].toFixed(3)}`;
+    $("phigh").textContent = `${Math.round(r.high_risk_probability * 100)}%`;
+    $("summary").textContent = `90% prediction interval from out-of-fold residuals: ${r.prediction_interval_90[0].toFixed(3)} – ${r.prediction_interval_90[1].toFixed(3)}.`;
+
+    // Meter over [0.25, 0.75] with the tuned Low/Medium/High cut-offs.
+    const [c1, c2] = info.prediction_cutoffs, lo = 0.25, hi = 0.75;
+    const pct = (v) => ((Math.min(Math.max(v, lo), hi) - lo) / (hi - lo)) * 100;
+    const meter = $("meter");
+    meter.textContent = "";
+    [[lo, c1, "#16a34a", "Low"], [c1, c2, "#d97706", "Medium"], [c2, hi, "#dc2626", "High"]].forEach(([a, b, col, name]) => {
+      meter.append(el("i", { style: `width:${pct(b) - pct(a)}%;background:${col};opacity:${r.risk_class === name ? 1 : 0.3}` }));
+    });
+    meter.append(el("span", { class: "ci", style: `left:${pct(r.confidence_interval[0])}%;width:${Math.max(pct(r.confidence_interval[1]) - pct(r.confidence_interval[0]), .8)}%` }));
+    meter.append(el("span", { class: "ptr", style: `left:${pct(r.flood_probability)}%` }));
+
+    const max = Math.max(...r.top_drivers.map((d) => Math.abs(d.shap)), 1e-9);
+    const box = $("drivers");
+    box.textContent = "";
+    r.top_drivers.forEach((d) => {
+      const up = d.shap >= 0;
+      const name = d.factor.replace(/([a-z])([A-Z])/g, "$1 $2");
+      box.append(el("div", { class: "driver" }, [
+        el("div", { class: "row" }, [
+          el("span", {}, [el("span", { class: "name", text: `${up ? "↑" : "↓"} ${name}` }), el("span", { class: "val", text: `  score ${d.value}` })]),
+          el("span", { class: "num", text: `${up ? "+" : "−"}${Math.abs(d.shap).toFixed(4)}` }),
+        ]),
+        el("div", { class: "track", "aria-hidden": "true" }, [el("i", { style: `width:${Math.max((Math.abs(d.shap) / max) * 100, 2)}%;background:${up ? "var(--raise)" : "var(--lower)"}` })]),
+      ]));
+    });
+    $("base").textContent = "Values are SHAP contributions to the predicted flood probability (exact for this ensemble, estimated by permutation sampling).";
+    const actions = $("actions");
+    actions.textContent = "";
+    r.recommended_actions.forEach((a) => actions.append(el("li", { text: a.action })));
+    $("empty").hidden = true;
+    $("result").hidden = false;
+    $("drivers-card").hidden = false;
+    $("actions-card").hidden = false;
+  }
+
+  $("form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!info) return;
+    const btn = $("submit"), err = $("form-error");
+    err.style.display = "none";
+    btn.disabled = true;
+    btn.textContent = "";
+    btn.append(el("span", { class: "spin", "aria-hidden": "true" }), " Analysing conditions…");
+    try {
+      const res = await api("/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(record()) });
+      render(await res.json());
+      if (window.matchMedia("(max-width: 960px)").matches) $("result-card").scrollIntoView({ behavior: "smooth" });
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.style.display = "block";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Predict flood risk";
+    }
+  });
+
+  $("demo").addEventListener("click", () => {
+    const high = new Set(["MonsoonIntensity", "Urbanization", "DrainageSystems", "DeterioratingInfrastructure", "Encroachments", "ClimateChange", "Siltation", "InadequatePlanning"]);
+    setValues((f, lo, hi) => (high.has(f) ? lo + (hi - lo) * 0.62 : 5));
+  });
+  $("random").addEventListener("click", () => setValues((f, lo, hi) => lo + Math.random() * Math.min(hi - lo, 10)));
+  $("reset").addEventListener("click", () => setValues(() => 5));
+
+  $("template").addEventListener("click", (e) => {
+    e.preventDefault();
+    if (!info) return;
+    const row = info.factors.map(() => 5).join(",");
+    const blob = new Blob([`id,${info.factors.join(",")}\n1,${row}\n`], { type: "text/csv" });
+    const a = el("a", { href: URL.createObjectURL(blob), download: "floodguard_template.csv" });
+    a.click();
+  });
+
+  $("upload").addEventListener("click", async () => {
+    const file = $("csv").files[0], err = $("batch-error"), out = $("batch-result");
+    err.style.display = "none";
+    out.textContent = "";
+    if (!file) { err.textContent = "Choose a CSV file first."; err.style.display = "block"; return; }
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const res = await api("/predict/csv", { method: "POST", body });
+      const text = await res.text();
+      const lines = text.trim().split(/\r?\n/);
+      const link = el("a", { class: "btn-soft btn", href: URL.createObjectURL(new Blob([text], { type: "text/csv" })), download: "floodguard_predictions.csv", text: `Download ${lines.length - 1} predictions` });
+      const header = lines[0].split(",");
+      const keep = ["id", "flood_probability", "risk_class", "high_risk_probability", "ci_low", "ci_high"].map((c) => header.indexOf(c)).filter((i) => i >= 0);
+      const table = el("table", {}, [el("thead", {}, [el("tr", {}, keep.map((i) => el("th", { text: header[i] })))]),
+        el("tbody", {}, lines.slice(1, 6).map((l) => { const c = l.split(","); return el("tr", {}, keep.map((i) => el("td", { text: c[i] }))); }))]);
+      out.append(el("p", { style: "margin:14px 0 0" }, [link]), el("div", { class: "table-wrap" }, [table]));
+    } catch (ex) {
+      err.textContent = ex.message;
+      err.style.display = "block";
+    }
+  });
+
+  (async () => {
+    try {
+      const health = await (await fetch("/health")).json();
+      setStatus(health.model_loaded ? "ok" : "warn", health.model_loaded ? "API connected" : "API up · model not loaded");
+    } catch (_) {
+      setStatus("down", "API offline");
+    }
+    try {
+      info = await (await api("/model-info")).json();
+      buildSliders();
+      $("limits").textContent = `${info.limits.max_csv_rows} rows, ${(info.limits.max_csv_bytes / 1e6).toFixed(1)} MB`;
+      $("synthetic-banner").style.display = info.data_source === "synthetic" ? "block" : "none";
+      $("model-meta").textContent = `Model v${info.version} · ${info.strategy} · trained ${String(info.trained_at).slice(0, 10)}.`;
+    } catch (ex) {
+      $("groups").textContent = "";
+      $("groups").append(el("p", { class: "muted", text: `Model information unavailable: ${ex.message}` }));
+      $("submit").disabled = true;
+    }
+  })();
+})();
+</script>
+</body>
+</html>

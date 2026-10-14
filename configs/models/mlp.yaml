@@ -1,0 +1,6 @@
+# PyTorch tabular MLP search space (Optuna). `hidden` = width of first layer, halved per layer.
+width: {type: categorical, choices: [64, 128, 256, 512]}
+depth: {type: int, low: 1, high: 4}
+dropout: {type: float, low: 0.0, high: 0.4}
+lr: {type: float, low: 1.0e-4, high: 1.0e-2, log: true}
+weight_decay: {type: float, low: 1.0e-7, high: 1.0e-3, log: true}

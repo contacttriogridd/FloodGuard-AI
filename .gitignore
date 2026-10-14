@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Data and run outputs (re-created by the pipeline)
+data/raw/
+data/synthetic/
+runs/
+mlruns/
+*.db
+deploy/model_artifacts/*
+!deploy/model_artifacts/.gitkeep
+
+# Packaged outputs
+*_overleaf.zip
+smoke_report.zip
+floodguard_outputs.zip
+
+# Secrets
+kaggle.json
+.env
+
+# Report build files (generated tables/figures ARE committed after the real run)
+report/*.aux
+report/*.log
+report/*.out
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+report/*.fls
+report/*.fdb_latexmk
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
