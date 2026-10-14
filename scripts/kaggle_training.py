@@ -39,9 +39,15 @@ def username() -> str:
     if os.environ.get("KAGGLE_USERNAME"):
         return os.environ["KAGGLE_USERNAME"]
     cfg = KAGGLE_DIR / "kaggle.json"
-    if not cfg.exists():
-        sys.exit("No Kaggle credentials. Download kaggle.json (Kaggle -> Settings -> API) and run `setup`.")
-    return json.loads(cfg.read_text())["username"]
+    if cfg.exists():
+        return json.loads(cfg.read_text())["username"]
+    if os.environ.get("KAGGLE_API_TOKEN") or (KAGGLE_DIR / "access_token").exists():
+        from kaggle.api.kaggle_api_extended import KaggleApi  # new-style token: ask the API who we are
+
+        api = KaggleApi()
+        api.authenticate()
+        return api.get_config_value("username")
+    sys.exit("No Kaggle credentials. Kaggle -> Settings -> API: create a token, then run `setup`.")
 
 
 def kernel_id() -> str:
@@ -82,7 +88,10 @@ def launch() -> None:
         "dataset_sources": [ORIGINAL_DATASET], "competition_sources": [COMPETITION], "kernel_sources": [],
     }
     (build / "kernel-metadata.json").write_text(json.dumps(meta, indent=2))
-    out = run("kernels", "push", "-p", str(build), check=False)
+    # T4: current PyTorch builds no longer ship kernels for the older P100.
+    out = run("kernels", "push", "-p", str(build), "--accelerator", "NvidiaTeslaT4", check=False)
+    if out.returncode != 0 and "accelerator" in (out.stdout + out.stderr).lower():
+        out = run("kernels", "push", "-p", str(build), check=False)
     print(out.stdout.strip() or out.stderr.strip())
     if out.returncode != 0:
         sys.exit("Push failed (internet access in Kaggle notebooks requires a phone-verified account).")

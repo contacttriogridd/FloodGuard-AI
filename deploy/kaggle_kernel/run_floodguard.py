@@ -33,9 +33,21 @@ reqs = [line for line in open("requirements.txt").read().splitlines() if line an
 sh([sys.executable, "-m", "pip", "install", "-q", *reqs])
 sh([sys.executable, "-m", "pip", "install", "-q", "--no-deps", "-e", "."])
 
-original = sorted(glob.glob("/kaggle/input/**/flood*.csv", recursive=True))
-original = [p for p in original if "playground-series" not in p]
-overrides = ["--override", "configs/kaggle.yaml"]
+def find(pattern, must_contain=""):
+    """Locate an attached file without assuming Kaggle's /kaggle/input layout."""
+    hits = sorted(glob.glob(f"/kaggle/input/**/{pattern}", recursive=True))
+    return [h for h in hits if must_contain in h]
+
+
+comp_train = find("train.csv", "playground-series-s4e5")
+comp_test = find("test.csv", "playground-series-s4e5")
+original = [p for p in find("flood*.csv") if "playground-series" not in p]
+print("Attached files:", comp_train, comp_test, original)
+if not comp_train:
+    sys.exit("Competition data not attached — check competition_sources in kernel-metadata.json")
+overrides = ["--override", "configs/kaggle.yaml", "--override", f"data.train_path={comp_train[0]}"]
+if comp_test:
+    overrides += ["--override", f"data.test_path={comp_test[0]}"]
 if original:
     overrides += ["--override", f"data.original_path={original[0]}"]
 else:
