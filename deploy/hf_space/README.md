@@ -20,7 +20,8 @@ predictions) trained on the Kaggle Playground Series S4E5 flood dataset.
 * **REST API** — [`/docs`](./docs): `POST /predict`, `/predict/batch`, `/predict/csv`, `/explain`, `GET /model-info`, `/health`
 
 Model artefacts are downloaded at start-up from the Hugging Face model repository named in
-the Space variable `FG_MODEL_REPO`.
+the Space variable `FG_MODEL_REPO` ([Kiransarathi/floodguard-ai-model](https://huggingface.co/Kiransarathi/floodguard-ai-model)).
+Source code: [github.com/contacttriogridd/FloodGuard-AI](https://github.com/contacttriogridd/FloodGuard-AI).
 
 > Decision-support tool for education and planning — not an official flood warning system.
 > The S4E5 data are synthetically generated from the original Flood Prediction Factors dataset.

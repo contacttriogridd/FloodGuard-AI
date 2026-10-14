@@ -8,7 +8,11 @@ socio-economic factors. It trains ten base learners through one out-of-fold engi
 them with blending/stacking, tests the gain statistically, explains predictions with SHAP / PDP / LIME and serves the
 model through a validated FastAPI + Gradio app in Docker on Hugging Face Spaces.
 
-> **Links** — GitHub: `<add after pushing>` · Hugging Face Space: `<add after deploying>`
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/contacttriogridd/FloodGuard-AI/blob/main/notebooks/FloodGuard_Colab.ipynb)
+
+> **Links** — GitHub: <https://github.com/contacttriogridd/FloodGuard-AI> ·
+> Hugging Face Space: <https://huggingface.co/spaces/Kiransarathi/floodguard-ai> (live after the Colab run deploys it) ·
+> Model repo: <https://huggingface.co/Kiransarathi/floodguard-ai-model>
 
 ---
 
@@ -98,7 +102,7 @@ mkdir -p deploy/model_artifacts && cp runs/models/floodguard_pipeline.joblib run
 docker build -t floodguard-ai . && docker run -p 7860:7860 floodguard-ai
 
 # Hugging Face: model repo + Docker Space (the Space downloads the model via FG_MODEL_REPO)
-export HF_TOKEN=hf_... HF_USER=<username>
+export HF_TOKEN=hf_... HF_USER=Kiransarathi
 bash deploy/push_to_hf_space.sh
 ```
 
