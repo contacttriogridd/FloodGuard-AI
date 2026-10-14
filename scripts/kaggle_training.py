@@ -71,11 +71,15 @@ def setup() -> None:
 
 def check() -> None:
     print(f"User: {username()}")
-    files = run("competitions", "files", COMPETITION, check=False)
-    if files.returncode != 0 or "403" in files.stdout + files.stderr:
+    # Listing files works without accepting the rules; downloading does not — so try a small file.
+    probe = Path(tempfile.mkdtemp(prefix="floodguard_probe_"))
+    dl = run("competitions", "download", COMPETITION, "-f", "sample_submission.csv", "-p", str(probe), "-q", check=False)
+    got = any(probe.iterdir())
+    shutil.rmtree(probe, ignore_errors=True)
+    if dl.returncode != 0 or not got:
         sys.exit("Competition rules NOT accepted yet: open https://www.kaggle.com/competitions/playground-series-s4e5/rules "
-                 "and click 'I Understand and Accept'.")
-    print("Competition data accessible (rules accepted).")
+                 "and click 'I Understand and Accept'.\n" + (dl.stdout + dl.stderr).strip()[-300:])
+    print("Competition data downloadable (rules accepted).")
 
 
 def launch() -> None:
@@ -92,9 +96,11 @@ def launch() -> None:
     out = run("kernels", "push", "-p", str(build), "--accelerator", "NvidiaTeslaT4", check=False)
     if out.returncode != 0 and "accelerator" in (out.stdout + out.stderr).lower():
         out = run("kernels", "push", "-p", str(build), check=False)
-    print(out.stdout.strip() or out.stderr.strip())
-    if out.returncode != 0:
-        sys.exit("Push failed (internet access in Kaggle notebooks requires a phone-verified account).")
+    message = (out.stdout + out.stderr).strip()
+    print(message)
+    if out.returncode != 0 or "error" in message.lower():
+        sys.exit("Push failed. Common causes: competition rules not accepted, or internet access in notebooks "
+                 "needs a phone-verified Kaggle account.")
     print(f"Running on Kaggle: https://www.kaggle.com/code/{kernel_id()}")
 
 
