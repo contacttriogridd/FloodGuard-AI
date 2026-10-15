@@ -1,0 +1,14 @@
+# Streamlit settings (Community Cloud reads this from the repository root).
+# Separate light/dark sections keep "Use system setting" working (a plain [theme] forces light mode).
+[theme.light]
+primaryColor = "#2563eb"
+
+[theme.dark]
+primaryColor = "#3b82f6"
+
+[server]
+# Matches the API's 2 MB CSV limit (configs/default.yaml → app.max_csv_bytes).
+maxUploadSize = 2
+
+[browser]
+gatherUsageStats = false

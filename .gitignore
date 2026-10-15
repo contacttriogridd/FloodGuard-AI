@@ -12,8 +12,7 @@ data/synthetic/
 runs/
 mlruns/
 *.db
-deploy/model_artifacts/*
-!deploy/model_artifacts/.gitkeep
+# deploy/model_artifacts/ IS committed: Streamlit Community Cloud serves the model from the repo.
 
 # Packaged outputs
 *_overleaf.zip

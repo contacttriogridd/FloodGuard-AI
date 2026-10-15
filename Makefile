@@ -62,7 +62,7 @@ docker-build:       ## bakes runs/models into the image
 	docker build -t floodguard-ai .
 
 docker-run:
-	docker run --rm -p 7860:7860 floodguard-ai
+	docker run --rm --name floodguard-ai -p 7860:7860 floodguard-ai
 
 compose:
 	docker compose up --build

@@ -116,7 +116,18 @@ docker build -t floodguard-ai . && docker run -p 7860:7860 floodguard-ai
 # Hugging Face: model repo + Docker Space (the Space downloads the model via FG_MODEL_REPO)
 export HF_TOKEN=hf_... HF_USER=Kiransarathi
 bash deploy/push_to_hf_space.sh
+
+# Streamlit app (prediction + SHAP drivers, batch CSV scoring, model card) — run from the repo root
+pip install -r streamlit_app/requirements.txt
+streamlit run streamlit_app/app.py
 ```
+
+**Streamlit Community Cloud:** *Create app* → repository `contacttriogridd/FloodGuard-AI`, branch `main`, main file
+`streamlit_app/app.py`; under *Advanced settings* pick **Python 3.11** (the model is pickled with 3.11 /
+scikit-learn 1.8.0). Cloud installs `streamlit_app/requirements.txt` (not the root training requirements) and
+`packages.txt`. The app needs the model either committed in `deploy/model_artifacts/` or downloaded from a Hugging
+Face model repo — add `FG_MODEL_REPO = "Kiransarathi/floodguard-ai-model"` (and `HF_TOKEN` if private) under
+*Settings → Secrets*.
 
 API: `POST /predict` (one record → `flood_probability`, `risk_class`, `high_risk_probability`, `confidence_interval`
 (95 % spread across ensemble members), `prediction_interval_90`, top-5 SHAP drivers, mitigation actions),

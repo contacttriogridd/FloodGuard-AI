@@ -124,6 +124,9 @@ def predictor() -> FloodGuardPredictor:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     load_predictor()
+    port = os.environ.get("PORT", "7860")
+    # Uvicorn only prints the 0.0.0.0 bind address; in Docker the port must also be published (-p).
+    log.info("Open http://localhost:%s  (Docker: run with -p %s:%s or `docker compose up`)", port, port, port)
     yield
 
 

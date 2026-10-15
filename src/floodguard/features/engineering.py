@@ -177,11 +177,8 @@ class OOFTargetEncoder(TransformerMixin, BaseEstimator):
         self.random_state = random_state
 
     def _encoder(self) -> TargetEncoder:
-        from sklearn.model_selection import KFold
-
-        # scikit-learn >= 1.9: shuffling is configured through a CV splitter.
-        folds = KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state)
-        return TargetEncoder(target_type="continuous", smooth=self.smooth, cv=folds)
+        # scikit-learn >= 1.3: cv must be an int (TargetEncoder handles shuffling internally).
+        return TargetEncoder(target_type="continuous", smooth=self.smooth, cv=int(self.cv))
 
     def _frame(self, values: np.ndarray, index: pd.Index) -> pd.DataFrame:
         return pd.DataFrame(values, columns=[f"te_{c}" for c in self.features], index=index)
@@ -234,8 +231,7 @@ class PairCombinationEncoder(TransformerMixin, BaseEstimator):
                 raise ValueError("PairCombinationEncoder needs the target for target encoding")
             from sklearn.model_selection import KFold
 
-            self.te_ = TargetEncoder(target_type="continuous", smooth="auto",
-                                     cv=KFold(n_splits=self.cv, shuffle=True, random_state=self.random_state))
+            self.te_ = TargetEncoder(target_type="continuous", smooth="auto", cv=int(self.cv))
             frames.append(pd.DataFrame(self.te_.fit_transform(keys, np.asarray(y)),
                                        columns=[f"te_{c}" for c in keys.columns], index=X.index))
         return pd.concat(frames, axis=1)

@@ -61,9 +61,16 @@ def build_demo(get_predictor: Callable[[], Any], factors: list[str], bounds: dic
 
 
 if __name__ == "__main__":
-    from floodguard.inference.predictor import FloodGuardPredictor
     from floodguard.utils.config import load_config
 
     cfg = load_config()
-    predictor = FloodGuardPredictor.from_env()
-    build_demo(lambda: predictor, list(cfg.features.factors), predictor.bounds, dict(cfg.features.themes)).launch()
+    predictor = None
+    try:
+        from floodguard.inference.predictor import FloodGuardPredictor
+        predictor = FloodGuardPredictor.from_env()
+    except Exception:
+        pass
+
+    factor_range = list(cfg.data.get("factor_range", [0, 25]))
+    bounds = (predictor.bounds if predictor else {f: factor_range for f in cfg.features.factors})
+    build_demo(lambda: predictor, list(cfg.features.factors), bounds, dict(cfg.features.themes)).launch()

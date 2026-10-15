@@ -2,13 +2,15 @@ services:
   floodguard:
     build: .
     image: floodguard-ai:latest
+    container_name: floodguard-ai
     ports:
+      # host:container — open http://localhost:7860 (EXPOSE alone does not publish a port).
       - "7860:7860"
     environment:
       # Optional: pull artefacts from a Hugging Face model repo instead of the mounted folder.
       FG_MODEL_REPO: ${FG_MODEL_REPO:-}
       HF_TOKEN: ${HF_TOKEN:-}
     volumes:
-      # Serve the model trained locally / on Colab (copy runs/models here or change the path).
-      - ./runs/models:/app/model:ro
+      # Serve the artefacts in deploy/model_artifacts (`make docker-build` copies runs/models there).
+      - ./deploy/model_artifacts:/app/model:ro
     restart: unless-stopped

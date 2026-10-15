@@ -1,0 +1,144 @@
+{
+  "name": "FloodGuard AI ensemble",
+  "version": "1.0.0",
+  "task": "Regression of FloodProbability (0-1) + Low/Medium/High risk class",
+  "data_source": "synthetic",
+  "training_rows": 6600,
+  "holdout_rows": 900,
+  "strategy": "blend_nnls",
+  "strategy_display": "NNLS weighted blend",
+  "members": [
+    {
+      "name": "elasticnet",
+      "display_name": "ElasticNet"
+    },
+    {
+      "name": "xgb",
+      "display_name": "XGBoost"
+    },
+    {
+      "name": "mlp",
+      "display_name": "Tabular MLP (PyTorch)"
+    }
+  ],
+  "weights": {
+    "ridge": 0.0,
+    "elasticnet": 0.8815347834437096,
+    "rf": 0.0,
+    "et": 0.0,
+    "histgb": 0.0,
+    "xgb": 0.07889137677924894,
+    "lgbm": 0.0,
+    "catboost": 0.0,
+    "mlp": 0.03957383977704145,
+    "ae_lgbm": 0.0
+  },
+  "oof_r2": 0.8836936622029288,
+  "holdout_r2_cv_models": 0.8757724527787749,
+  "holdout_r2_deployed_refit": 0.8758998845520848,
+  "feature_bounds": {
+    "MonsoonIntensity": [
+      0,
+      15
+    ],
+    "TopographyDrainage": [
+      0,
+      16
+    ],
+    "RiverManagement": [
+      0,
+      16
+    ],
+    "Deforestation": [
+      0,
+      15
+    ],
+    "Urbanization": [
+      0,
+      14
+    ],
+    "ClimateChange": [
+      0,
+      15
+    ],
+    "DamsQuality": [
+      0,
+      17
+    ],
+    "Siltation": [
+      0,
+      17
+    ],
+    "AgriculturalPractices": [
+      0,
+      17
+    ],
+    "Encroachments": [
+      0,
+      15
+    ],
+    "IneffectiveDisasterPreparedness": [
+      0,
+      17
+    ],
+    "DrainageSystems": [
+      0,
+      15
+    ],
+    "CoastalVulnerability": [
+      0,
+      13
+    ],
+    "Landslides": [
+      0,
+      15
+    ],
+    "Watersheds": [
+      0,
+      18
+    ],
+    "DeterioratingInfrastructure": [
+      0,
+      16
+    ],
+    "PopulationScore": [
+      0,
+      17
+    ],
+    "WetlandLoss": [
+      0,
+      16
+    ],
+    "InadequatePlanning": [
+      0,
+      16
+    ],
+    "PoliticalFactors": [
+      0,
+      17
+    ]
+  },
+  "risk_true_cutoffs": [
+    0.489,
+    0.542
+  ],
+  "risk_prediction_cutoffs": [
+    0.4882721033242389,
+    0.5385002626568482
+  ],
+  "refit": {
+    "elasticnet": {},
+    "xgb": {
+      "n_estimators": 57
+    },
+    "mlp": {
+      "epochs": 12
+    }
+  },
+  "libraries": {
+    "python": "3.11.9",
+    "scikit-learn": "1.8.0"
+  },
+  "intended_use": "Decision support and education; not an official flood warning system.",
+  "limitations": "Kaggle S4E5 data are synthetically generated from the original Flood Prediction Factors dataset; factor scores are abstract 0-20 indices, not physical measurements."
+}
