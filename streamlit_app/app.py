@@ -18,6 +18,7 @@ import base64
 import hashlib
 import json
 import os
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,9 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 ROOT = Path(__file__).resolve().parents[1]
+# `streamlit run` puts only this script's folder on sys.path; the `api` package lives at the repo root.
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 API_PATHS = {"/health", "/model-info", "/predict", "/predict/batch", "/predict/csv", "/explain"}
 # Public FastAPI deployment: target of the page's Gradio / API-docs links and of its code snippets.
 DEFAULT_API_URL = "https://floodguard-ai-e81o.onrender.com"
@@ -109,9 +113,10 @@ try:
     client = api_client()
 except Exception as exc:  # noqa: BLE001
     st.title("🌊 FloodGuard AI")
-    st.error(f"The model could not be loaded: {exc}")
-    st.info("Commit the trained artefacts to `deploy/model_artifacts/`, or add `FG_MODEL_REPO` (and `HF_TOKEN` for a "
-            "private repo) under the app's **Settings → Secrets** on Streamlit Community Cloud.")
+    st.error(f"The app could not start: {exc}")
+    if "No trained model" in str(exc):
+        st.info("Commit the trained artefacts to `deploy/model_artifacts/`, or add `FG_MODEL_REPO` (and `HF_TOKEN` for "
+                "a private repo) under the app's **Settings → Secrets** on Streamlit Community Cloud.")
     st.stop()
 
 KEY = "floodguard_ui"
