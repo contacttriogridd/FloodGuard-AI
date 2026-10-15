@@ -1312,7 +1312,7 @@
   const highlight = (src) => esc(src).replace(/("(?:[^"\\]|\\.)*"|'[^']*')|\b(\d+(?:\.\d+)?)\b|\b(import|const|await|print|curl|timeout)\b/g,
     (m, str, num, kw) => (str ? `<span class="t-s">${str}</span>` : num ? `<span class="t-n">${num}</span>` : `<span class="t-k">${kw}</span>`));
   function snippet() {
-    const rec = S.info ? record() : {}, url = `${location.origin}/predict`, json = JSON.stringify(rec, null, 2);
+    const rec = S.info ? record() : {}, url = `${window.FG_API_BASE || location.origin}/predict`, json = JSON.stringify(rec, null, 2);
     return {
       curl: `curl -X POST "${url}" \\\n  -H "Content-Type: application/json" \\\n  -d '${json}'`,
       python: `import requests\n\nrecord = ${JSON.stringify(rec, null, 4)}\n\nr = requests.post("${url}", json=record, timeout=30)\nr.raise_for_status()\nresult = r.json()\nprint(result["risk_class"], result["flood_probability"])`,

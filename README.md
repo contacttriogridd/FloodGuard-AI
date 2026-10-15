@@ -117,7 +117,8 @@ docker build -t floodguard-ai . && docker run -p 7860:7860 floodguard-ai
 export HF_TOKEN=hf_... HF_USER=Kiransarathi
 bash deploy/push_to_hf_space.sh
 
-# Streamlit app (prediction + SHAP drivers, batch CSV scoring, model card) — run from the repo root
+# Streamlit app — the same web UI as the FastAPI deployment (api/static/index.html), shown full screen as a
+# Streamlit component; its API calls are answered by the FastAPI app in-process (streamlit_app/bridge.js)
 pip install -r streamlit_app/requirements.txt
 streamlit run streamlit_app/app.py
 ```
